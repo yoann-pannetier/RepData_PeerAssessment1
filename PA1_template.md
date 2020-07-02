@@ -12,7 +12,8 @@ output:
 ## Loading required libraries
 
 
-```{r}
+
+```r
 library(knitr)
 library(ggplot2)
 ```
@@ -22,13 +23,15 @@ library(ggplot2)
 
 Load the CSV file into a R variable (data)
 
-```{r}
+
+```r
 data <- read.csv(unz("activity.zip", "activity.csv"))
 ```
 
 Transform the date variable in data into a R date class (format YYY-MM-DD)
 
-```{r}
+
+```r
 data <- transform(data, date = as.Date(date))
 ```
 
@@ -37,15 +40,19 @@ data <- transform(data, date = as.Date(date))
 
 Aggregate the sum of steps for each day and remove invalid numbers (NA)
 
-```{r}
+
+```r
 steps_per_day <- aggregate(steps ~ date, data, sum, na.rm = TRUE)
 ```
 
 Create histogram plot of the numer of days for each range of numbers of steps
 
-```{r}
+
+```r
 hist(steps_per_day$steps, main = "Total Steps per day", xlab = "Steps", ylim = c(0,40), labels = TRUE, breaks = 30)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
 ## 3. Mean and median number of steps taken each day
 
@@ -54,14 +61,24 @@ Calculate the mean and median of total steps taken per day:
 
 - mean:
 
-```{r}
+
+```r
 mean(steps_per_day$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 - median:
 
-```{r}
+
+```r
 median(steps_per_day$steps)
+```
+
+```
+## [1] 10765
 ```
 
 ## 4. Time series plot of the average number of steps taken
@@ -69,24 +86,33 @@ median(steps_per_day$steps)
 
 Aggregate the mean of steps for each day and remove invalid numbers (NA)
 
-```{r}
+
+```r
 mean_steps_interval <- aggregate(steps ~ interval, data, mean, na.rm = TRUE)
 ```
 
 Create time series plot
 
-```{r}
+
+```r
 plot(mean_steps_interval$interval, mean_steps_interval$steps, type = "l", main = "Average number of steps per 5-min interval", xlab = "Interval", ylab = "Average Steps")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 
 ## 5. The 5-minute interval that, on average, contains the maximum number of steps
 
 
 Select the 5-minute interval with the maximum value for steps
 
-```{r}
+
+```r
 max_interval <- mean_steps_interval$interval[which(mean_steps_interval$steps == max(mean_steps_interval$steps))]
 print(max_interval)
+```
+
+```
+## [1] 835
 ```
 
 ## 6. Code to describe and show a strategy for imputing missing data
@@ -94,13 +120,19 @@ print(max_interval)
 
 Report number of missing values in the dataset
 
-```{r}
+
+```r
 sum(is.na(data))
+```
+
+```
+## [1] 2304
 ```
 
 Replace NA with average value of the 5-min interval
 
-```{r}
+
+```r
 imputed_data <- data
 for (i in 1:length(imputed_data$steps)) {
   if (is.na(imputed_data$steps[i])) {
@@ -111,9 +143,14 @@ for (i in 1:length(imputed_data$steps)) {
 
 Aggregate the data et report number of missing values in the dataset as a control
 
-```{r}
+
+```r
 imp_steps_per_day <- aggregate(steps ~ date, imputed_data, sum, na.rm = TRUE)
 sum(is.na(imp_steps_per_day$steps))
+```
+
+```
+## [1] 0
 ```
 
 ## 7. Histogram of the total number of steps taken each day after missing values are imputed
@@ -121,20 +158,33 @@ sum(is.na(imp_steps_per_day$steps))
 
 Repeat from step 4. with updated dataset produced in step 6. 
 
-```{r}
+
+```r
 hist(imp_steps_per_day$steps, main = "Total Steps per day", xlab = "Steps", ylim = c(0,40), labels = TRUE, breaks = 30)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+
 Calculate the mean of the imputed dataset, which is unchanged since we used the mean to fill the blanks
 
-```{r}
+
+```r
 mean(imp_steps_per_day$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 Calculate the median of the imputed dataset, which is different from the previously calculated median since we fill the blanks with an average value
 
-```{r}
+
+```r
 median(imp_steps_per_day$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 ## 8. Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
@@ -142,7 +192,8 @@ median(imp_steps_per_day$steps)
 
 Add a variable wkdy to the dataset to determine whether this is a weekday or a weekend
 
-```{r}
+
+```r
 imputed_data$date <- as.Date(imputed_data$date)
 imputed_data$wkdy <- "weekday"
 imputed_data$wkdy[weekdays(imputed_data$date) == "Saturday" | weekdays(imputed_data$date) == "Sunday"] <- "weekend"
@@ -152,7 +203,10 @@ imputed_data_interval <- aggregate(steps ~ interval + wkdy, imputed_data, mean, 
 
 Create the plot
 
-```{r}
+
+```r
 g <- ggplot(imputed_data_interval, aes(interval, steps))
 g + facet_grid(wkdy ~ .) + geom_line() + ggtitle("Average number of steps per 5-min interval")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
